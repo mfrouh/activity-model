@@ -14,6 +14,13 @@
             "email": "mohamedfrouh96@gmail.com"
         }
     ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MFrouh\\ActivityModel\\Providers\\ActivityModelServiceProvider"
+            ]
+        }
+    },
     "minimum-stability": "dev",
     "require": {}
 }
