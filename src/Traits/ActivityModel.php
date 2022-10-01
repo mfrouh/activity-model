@@ -45,7 +45,7 @@ trait ActivityModel
                             }
                         }
                     } else {
-                        $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => $user_id]);
+                        $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => $user_id, 'data' => json_encode($model->getChanges())]);
                         $model->sendNotification($activity);
                     }
                 });
