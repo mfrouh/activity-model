@@ -2,7 +2,7 @@
 
 ```php
 
-use MFrouh\activityModel\Interfaces\ActivityInterface;
+use MFrouh\ActivityModel\Interfaces\ActivityInterface;
 use MFrouh\ActivityModel\Traits\ActivityModel;
 
 
