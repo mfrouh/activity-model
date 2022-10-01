@@ -1,6 +1,6 @@
 <?php
 
-namespace MFrouh\ActivityModel\Interfaces;
+namespace MFrouh\activityModel\Interfaces;
 
 interface ActivityInterface
 {

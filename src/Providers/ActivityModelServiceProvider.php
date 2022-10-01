@@ -18,6 +18,6 @@ class ActivityModelServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations/2022_09_23_163032_create_activities_table.php');
     }
 }
