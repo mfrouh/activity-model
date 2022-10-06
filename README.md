@@ -1,5 +1,13 @@
 ### Activity Model
 
+```composer
+composer require mfrouh/activity-model
+```
+#
+```bash
+php artisan migrate
+```
+#
 ```php
 
 use MFrouh\ActivityModel\Interfaces\ActivityInterface;

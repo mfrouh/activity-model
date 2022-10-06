@@ -21,13 +21,17 @@ trait ActivityModel
             try {
                 $user_id = auth()->user()->id;
                 static::created(function ($model) use ($user_id) {
-                    $activity = $model->activities()->create($model->activityDefault()['created'] + ['user_id' => $user_id]);
-                    $model->sendNotification($activity);
+                    if ($model->activityDefault()['created']) {
+                        $activity = $model->activities()->create($model->activityDefault()['created'] + ['user_id' => $user_id]);
+                        $model->sendNotification($activity);
+                    }
                 });
 
                 static::deleted(function ($model) use ($user_id) {
-                    $activity = $model->activities()->create($model->activityDefault()['deleted'] + ['user_id' => $user_id]);
-                    $model->sendNotification($activity);
+                    if ($model->activityDefault()['deleted']) {
+                        $activity = $model->activities()->create($model->activityDefault()['deleted'] + ['user_id' => $user_id]);
+                        $model->sendNotification($activity);
+                    }
                 });
 
                 static::updated(function ($model) use ($user_id) {
@@ -45,14 +49,18 @@ trait ActivityModel
                             }
                         }
                     } else {
-                        $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => $user_id, 'data' => json_encode($model->getChanges())]);
-                        $model->sendNotification($activity);
+                        if ($model->activityDefault()['updated']) {
+                            $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => $user_id, 'data' => json_encode($model->getChanges())]);
+                            $model->sendNotification($activity);
+                        }
                     }
                 });
                 if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses(new self))) {
                     static::restored(function ($model) use ($user_id) {
-                        $activity = $model->activities()->create($model->activityDefault()['restored'] + ['user_id' => $user_id]);
-                        $model->sendNotification($activity);
+                        if ($model->activityDefault()['restored']) {
+                            $activity = $model->activities()->create($model->activityDefault()['restored'] + ['user_id' => $user_id]);
+                            $model->sendNotification($activity);
+                        }
                     });
                 }
             } catch (QueryException $error) {
