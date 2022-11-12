@@ -38,18 +38,18 @@ trait ActivityModel
                     if (count($changes) > 1 && $model->activityChanges()) {
                         foreach ($changes as $key => $value) {
                             if (array_key_exists($key, $model->activityChanges()) && array_key_exists('title_ar', $model->activityChanges()[$key])) {
-                                $activity = $model->activities()->create($model->activityChanges()[$key] + ['user_id' => auth()->user()->id]);
+                                $activity = $model->activities()->create($model->activityChanges()[$key] + ['user_id' => auth()->user()->id, 'data' => json_encode($model->getChanges())]);
                                 $model->sendNotification($activity);
                             } else {
                                 if (array_key_exists($key, $model->activityChanges()) && array_key_exists($value, $model->activityChanges()[$key]) && array_key_exists('title_ar', $model->activityChanges()[$key][$value])) {
-                                    $activity = $model->activities()->create($model->activityChanges()[$key][$value] + ['user_id' => auth()->user()->id]);
+                                    $activity = $model->activities()->create($model->activityChanges()[$key][$value] + ['user_id' => auth()->user()->id, 'data' => json_encode($model->getChanges())]);
                                     $model->sendNotification($activity);
                                 }
                             }
                         }
                     } else {
                         if (array_key_exists('updated', $model->activityDefault())) {
-                            $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => auth()->user()->id]);
+                            $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => auth()->user()->id, 'data' => json_encode($model->getChanges())]);
                             $model->sendNotification($activity);
                         }
                     }
@@ -57,8 +57,8 @@ trait ActivityModel
                 if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses(new self))) {
                     static::restored(function ($model) {
                         if (array_key_exists('restored', $model->activityDefault())) {
-                        $activity = $model->activities()->create($model->activityDefault()['restored'] + ['user_id' => auth()->user()->id]);
-                        $model->sendNotification($activity);
+                            $activity = $model->activities()->create($model->activityDefault()['restored'] + ['user_id' => auth()->user()->id]);
+                            $model->sendNotification($activity);
                         }
                     });
                 }
