@@ -35,21 +35,28 @@ trait ActivityModel
 
                 static::updated(function ($model) {
                     $changes = $model->getChanges();
+                    $original = $model->getOriginal();
+                    $array = [];
+                    foreach ($changes as $key => $value) {
+                        if ($key != 'updated_at') {
+                            $array[$key] = ['new' => $value, 'old' => $original[$key]];
+                        }
+                    }
                     if (count($changes) > 1 && $model->activityChanges()) {
                         foreach ($changes as $key => $value) {
                             if (array_key_exists($key, $model->activityChanges()) && array_key_exists('title_ar', $model->activityChanges()[$key])) {
-                                $activity = $model->activities()->create($model->activityChanges()[$key] + ['user_id' => auth()->user()->id, 'data' => json_encode($model->getChanges())]);
+                                $activity = $model->activities()->create($model->activityChanges()[$key] + ['user_id' => auth()->user()->id, 'data' => json_encode($array)]);
                                 $model->sendNotification($activity);
                             } else {
                                 if (array_key_exists($key, $model->activityChanges()) && array_key_exists($value, $model->activityChanges()[$key]) && array_key_exists('title_ar', $model->activityChanges()[$key][$value])) {
-                                    $activity = $model->activities()->create($model->activityChanges()[$key][$value] + ['user_id' => auth()->user()->id, 'data' => json_encode($model->getChanges())]);
+                                    $activity = $model->activities()->create($model->activityChanges()[$key][$value] + ['user_id' => auth()->user()->id, 'data' => json_encode($array)]);
                                     $model->sendNotification($activity);
                                 }
                             }
                         }
                     } else {
                         if (array_key_exists('updated', $model->activityDefault())) {
-                            $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => auth()->user()->id, 'data' => json_encode($model->getChanges())]);
+                            $activity = $model->activities()->create($model->activityDefault()['updated'] + ['user_id' => auth()->user()->id, 'data' => json_encode($array)]);
                             $model->sendNotification($activity);
                         }
                     }
