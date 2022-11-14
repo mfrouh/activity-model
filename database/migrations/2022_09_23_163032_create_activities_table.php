@@ -19,7 +19,7 @@ class CreateActivitiesTable extends Migration
             $table->string('title_en')->nullable();
             $table->text('message_ar');
             $table->text('message_en')->nullable();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->json('data')->nullable();
             $table->morphs('activity');
             $table->timestamps();
