@@ -4,12 +4,14 @@ namespace MFrouh\ActivityModel\Traits;
 
 use Exception;
 use MFrouh\ActivityModel\Models\Activity;
-use LaravelFCM\Facades\FCM;
 use Illuminate\Support\Facades\Log;
-use LaravelFCM\Message\OptionsBuilder;
 use Illuminate\Database\QueryException;
-use LaravelFCM\Message\PayloadDataBuilder;
-use LaravelFCM\Message\PayloadNotificationBuilder;
+use DateTimeImmutable;
+use Kreait\Firebase\Exception\Messaging\NotFound as MessagingNotFound;
+use Kreait\Firebase\Exception\MessagingException;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FcmNotification;
 
 
 trait ActivityModel
@@ -82,29 +84,47 @@ trait ActivityModel
     {
         $title = 'title_' . app()->getLocale();
         $message = 'message_' . app()->getLocale();
-        $optionBuilder = new OptionsBuilder();
-        $optionBuilder->setTimeToLive(60 * 20);
-        $notificationBuilder = new PayloadNotificationBuilder($activity->$title);
-        $notificationBuilder->setBody($activity->$message)
-            ->setSound("general_notification.mp3");
 
-        $dataBuilder = new PayloadDataBuilder();
-        $dataBuilder->addData([
-            'data' => [
-                'notification_type' => $activity->type,
-                'notification_title' => $activity->$title,
-                'notification_message' => $activity->$message,
-                'notification_data' => [],
-            ]
-        ]);
+        try {
+            $factory        = (new Factory())->withServiceAccount(base_path(env('FIREBASE_CREDENTIALS')));
+            $factory->createAuth();
+            $cloudMessaging = $factory->createMessaging();
+            $notification   = FcmNotification::create($activity->$title, $activity->$message);
 
-        $option = $optionBuilder->build();
-        $notification = $notificationBuilder->build();
-        $data = $dataBuilder->build();
-        $tokens = $this->activityFcmTokens();
+            $data = [
+                'data' => json_encode([
+                    'notification_type'    => $activity->type,
+                    'notification_title'   => $activity->$title,
+                    'notification_message' => $activity->$message,
+                    'notification_data'    => [],
+                    'item_id'              => $activity->item_id,
+                ]),
+            ];
 
-        if (count($tokens) > 0) {
-            FCM::sendTo($tokens, $option, $notification, $data);
+            if (count($tokens) > 0) {
+                foreach ($tokens as $token) {
+                    $message = CloudMessage::withTarget('token', $token)->withNotification($notification)->withData($data);
+
+                    $cloudMessaging->send($message);
+                }
+            }
+        } catch (MessagingNotFound $e) {
+            Log::error('The target device could not be found.' . $e->getMessage());
+        } catch (\Kreait\Firebase\Exception\Messaging\InvalidMessage $e) {
+            Log::error('The given message is malformatted.' . $e->getMessage());
+        } catch (\Kreait\Firebase\Exception\Messaging\ServerUnavailable $e) {
+            $retryAfter = $e->retryAfter();
+            Log::error('The FCM servers are currently unavailable. Retrying at ' . $retryAfter->format(\DATE_ATOM));
+            while ($retryAfter <= new DateTimeImmutable()) {
+                sleep(1);
+            }
+            $cloudMessaging->send($message);
+        } catch (\Kreait\Firebase\Exception\Messaging\ServerError $e) {
+            Log::error('The FCM servers are down.');
+        } catch (MessagingException $e) {
+            Log::error('Unable to send message: ' . $e->getMessage());
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage() . '  from ' . $th->getFile() . ' on line ' . $th->getLine());
         }
     }
 }

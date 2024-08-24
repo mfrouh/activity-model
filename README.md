@@ -1,13 +1,17 @@
-### Activity Model
+# Activity Model
 
 ```composer
 composer require mfrouh/activity-model
 ```
-#
+
 ```bash
 php artisan migrate
 ```
-#
+
+```env
+FIREBASE_CREDENTIALS=firebase-credentials.json
+```
+
 ```php
 
 use MFrouh\ActivityModel\Interfaces\ActivityInterface;
@@ -68,8 +72,8 @@ class Order extends Model implements ActivityInterface
 }
 ```
 
-#### 1- activityChanges() method take column name messages
+## **1- activityChanges() method take column name messages**
 
-#### 2- activityDefault() method take event name messages
+## **2- activityDefault() method take event name messages**
 
-#### 3- activityFcmTokens() method take tokens to send fcm notification
+## **3- activityFcmTokens() method take tokens to send fcm notification**
