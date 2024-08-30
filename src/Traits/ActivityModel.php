@@ -101,6 +101,8 @@ trait ActivityModel
                 ]),
             ];
 
+            $tokens = $this->activityFcmTokens();
+
             if (count($tokens) > 0) {
                 foreach ($tokens as $token) {
                     $message = CloudMessage::withTarget('token', $token)->withNotification($notification)->withData($data);
